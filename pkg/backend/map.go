@@ -1,20 +1,20 @@
 package backend
 
-// MapType describe the type of a point on the map.
-type MapType int
+// MapPointType describe the type of a point on the map.
+type MapPointType int
 
 const (
-	MapTypeNone MapType = iota
+	MapTypeNone MapPointType = iota
 	MapTypeWall
 	MapTypeSpawn
 )
 
 // GetMapByType returns a map of map types to sets to coordinates.
-func (game *Game) GetMapByType() map[MapType][]Coordinate {
+func (game *Game) GetMapByType() map[MapPointType][]Coordinate {
 	width, height := game.GetMapDimensions()
 	mapCenterX := width / 2
 	mapCenterY := height / 2
-	symbols := make(map[MapType][]Coordinate, 0)
+	symbols := make(map[MapPointType][]Coordinate, 0)
 	for mapY, row := range game.gameMap {
 		for mapX, col := range row {
 			mapType := MapTypeNone

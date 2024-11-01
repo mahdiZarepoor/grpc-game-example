@@ -37,7 +37,7 @@ type Game struct {
 
 // NewGame constructs a new Game struct.
 func NewGame() *Game {
-	game := Game{
+	return &Game{
 		Entities:        make(map[uuid.UUID]Identifier),
 		ActionChannel:   make(chan Action, 1),
 		lastAction:      make(map[string]time.Time),
@@ -48,11 +48,10 @@ func NewGame() *Game {
 		gameMap:         MapDefault,
 		spawnPointIndex: 0,
 	}
-	return &game
 }
 
 // Start begins the main game loop, which waits for new actions and updates the
-// game state occordinly.
+// game state accordingly.
 func (game *Game) Start() {
 	go game.watchActions()
 	go game.watchCollisions()
@@ -77,7 +76,7 @@ func (game *Game) watchCollisions() {
 	for {
 		game.Mu.Lock()
 		spawnPoints := game.GetMapByType()[MapTypeSpawn]
-		for _, entities := range game.getCollisionMap() {
+		for _, entities := range game.getObjectsCoordinates() {
 			if len(entities) <= 1 {
 				continue
 			}
@@ -132,7 +131,7 @@ func (game *Game) watchCollisions() {
 			}
 		}
 		// Remove lasers that hit walls.
-		collisionMap := game.getCollisionMap()
+		collisionMap := game.getObjectsCoordinates()
 		for _, wall := range game.GetMapByType()[MapTypeWall] {
 			entities, ok := collisionMap[wall]
 			if !ok {
@@ -154,8 +153,8 @@ func (game *Game) watchCollisions() {
 	}
 }
 
-// getCollisionMap maps coordinates to sets of entities.
-func (game *Game) getCollisionMap() map[Coordinate][]Identifier {
+// getObjectsCoordinates maps coordinates to sets of entities.
+func (game *Game) getObjectsCoordinates() map[Coordinate][]Identifier {
 	collisionMap := map[Coordinate][]Identifier{}
 	for _, entity := range game.Entities {
 		positioner, ok := entity.(Positioner)
@@ -397,7 +396,7 @@ func (action MoveAction) Perform(game *Game) {
 		}
 	}
 	// Check if position collides with a player.
-	collidingEntities, ok := game.getCollisionMap()[position]
+	collidingEntities, ok := game.getObjectsCoordinates()[position]
 	if ok {
 		for _, entity := range collidingEntities {
 			_, ok := entity.(*Player)
